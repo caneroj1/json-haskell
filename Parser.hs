@@ -23,10 +23,15 @@ type KeyValuePair = Parser (String, JSON)
 
 parseDouble :: Parser Double
 parseDouble = try $ do
+  neg    <- optionMaybe $ char '-'
   prefix <- many1 digit
   radix  <- optionMaybe $ char '.'
-  parseRest prefix radix
+  parseRest (maybeApp neg prefix) radix
   where
+    maybeApp :: Maybe a -> [a] -> [a]
+    maybeApp Nothing  xs = xs
+    maybeApp (Just r) xs = r:xs
+
     parseRest :: String -> Maybe Char -> Parser Double
     parseRest prefix Nothing  = return $ read prefix
     parseRest prefix (Just r) = do
